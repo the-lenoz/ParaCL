@@ -19,3 +19,9 @@ CMakeUserPresets.json
 #cmake-build-*
 
 build/
+build-clangd/
+.clangd
+.cache
+
+.#*
+.#.*
