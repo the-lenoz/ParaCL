@@ -1,0 +1,22 @@
+left = 10;
+right = 20;
+
+if (left == right) {
+  print 0;
+}
+
+if (left < right) {
+  print 1;
+}
+
+if (right > left) {
+  print 2;
+}
+
+if (left <= right) {
+  print 3;
+}
+
+if (right >= left) {
+  print 4;
+}

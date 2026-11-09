@@ -1,0 +1,5 @@
+value_1 = -42;
+input_value = ?;
+
+print value_1;
+print input_value;

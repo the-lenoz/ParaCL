@@ -1,0 +1,13 @@
+
+N = ?;
+
+a = 1; b = 0;
+while (N > 0)
+{
+  tmp = a;
+  a = a + b;
+  b = tmp;
+  N = N - 1;
+}
+
+print b;

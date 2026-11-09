@@ -4,28 +4,49 @@
 #include <memory>
 #include <string>
 
+/**
+ * Basic class for AST node; Declares print function 
+ */
 class ASTNode {
  public:
   virtual ~ASTNode() = default;
   virtual void print(int indent = 0) const = 0;
 };
 
+/**
+ * Basic class for expression AST node; expressions are all the constructions with values
+ */
 class ExprNode : public ASTNode {};
 
+/**
+ * Basic class for arithmetic expression AST node, could be addition, substraction or term
+ */
 class ArithNode : public ExprNode {};
 
+/**
+ * Basic class for arithmetic term AST node - could be multiplication, division or atom
+ */
 class TermNode : public ArithNode {};
 
+/**
+ * Basic class for atomic expression AST node - could be a numeric const, variable, input sign or an expression in parentheses
+ */
 class AtomNode : public TermNode {};
 
+/**
+ * Question mark AST node - in ParaCL it means input
+ */
 class QuestionMarkNode : public AtomNode {
  public:
   QuestionMarkNode() {}
   void print(int indent) const override {
-    std::cout << std::string(indent, ' ') << "?";
+    std::cout << std::string(indent, ' ') << "?\n";
   }
 };
 
+/**
+ * Any identifier AST node (only variables supported yet)
+ */
 class IdNode : public AtomNode {
   std::string value_;
 
@@ -36,6 +57,9 @@ public:
   }
 };
 
+/**
+ * Integer constant AST node
+ */
 class IntNode : public AtomNode {
   int value_;
 
@@ -46,6 +70,10 @@ class IntNode : public AtomNode {
   }
 };
 
+
+/**
+ * Expression in parentheses AST node
+ */
 class ParenExprNode : public AtomNode {
   std::unique_ptr<ExprNode> expr_;
 
@@ -57,6 +85,9 @@ class ParenExprNode : public AtomNode {
   }
 };
 
+/**
+ * Multiplication AST node
+ */
 class MulNode : public TermNode {
   std::unique_ptr<TermNode> left_;
   std::unique_ptr<AtomNode> right_;
@@ -72,6 +103,9 @@ class MulNode : public TermNode {
   }
 };
 
+/**
+ * Division AST node
+ */
 class DivNode : public TermNode {
   std::unique_ptr<TermNode> left_;
   std::unique_ptr<AtomNode> right_;
@@ -87,6 +121,9 @@ class DivNode : public TermNode {
   }
 };
 
+/**
+ * Addition AST node 
+ */
 class AddNode : public ArithNode {
   std::unique_ptr<ArithNode> left_;
   std::unique_ptr<TermNode> right_;
@@ -102,6 +139,9 @@ class AddNode : public ArithNode {
   }
 };
 
+/**
+ * Substraction AST node 
+ */
 class SubNode : public ArithNode {
   std::unique_ptr<ArithNode> left_;
   std::unique_ptr<TermNode> right_;
@@ -117,6 +157,9 @@ class SubNode : public ArithNode {
   }
 };
 
+/**
+ * AST node for '==' operator
+ */
 class EqNode : public ExprNode {
   std::unique_ptr<ExprNode> left_;
   std::unique_ptr<ArithNode> right_; public:
@@ -130,6 +173,9 @@ class EqNode : public ExprNode {
   }
 };
 
+/**
+ * AST node for '<' operator
+ */
 class LtNode : public ExprNode {
   std::unique_ptr<ExprNode> left_;
   std::unique_ptr<ArithNode> right_;
@@ -145,6 +191,9 @@ class LtNode : public ExprNode {
   }
 };
 
+/**
+ * AST node for '>' operator
+ */
 class GtNode : public ExprNode {
   std::unique_ptr<ExprNode> left_;
   std::unique_ptr<ArithNode> right_;
@@ -160,6 +209,9 @@ class GtNode : public ExprNode {
   }
 };
 
+/**
+ * AST node for '<=' operator
+ */
 class LteNode : public ExprNode {
   std::unique_ptr<ExprNode> left_;
   std::unique_ptr<ArithNode> right_;
@@ -175,6 +227,9 @@ class LteNode : public ExprNode {
   }
 };
 
+/**
+ * AST node for '>=' operator
+ */
 class GteNode : public ExprNode {
   std::unique_ptr<ExprNode> left_;
   std::unique_ptr<ArithNode> right_;
@@ -190,9 +245,18 @@ class GteNode : public ExprNode {
   }
 };
 
+/**
+ * Base class for statement AST node.
+ * could be if, while, print or assignment
+ */
 class StmtNode : public ASTNode {};
 
 
+/**
+ * AST node for statement block.
+ * if there is only one statement, the
+ * right_ field is nullptr
+ */
 class BlockNode : public ASTNode {
   std::unique_ptr<ASTNode> left_;
   std::unique_ptr<StmtNode> right_;
@@ -211,7 +275,9 @@ class BlockNode : public ASTNode {
   }
 };
 
-
+/**
+ * AST node for 'if' statemnt
+ */
 class IfStmtNode : public StmtNode {
   std::unique_ptr<ExprNode> condition_;
   std::unique_ptr<BlockNode> body_;
@@ -229,6 +295,9 @@ public:
   }
 };
 
+/**
+ * AST node for 'while' statement
+ */
 class WhileStmtNode : public StmtNode {
   std::unique_ptr<ExprNode> condition_;
   std::unique_ptr<BlockNode> body_;
@@ -246,6 +315,9 @@ public:
   }
 };
 
+/**
+ * AST node for 'print' statement
+ */
 class PrintStmtNode : public StmtNode {
   std::unique_ptr<ExprNode> expr_;
 public:
@@ -257,7 +329,9 @@ public:
     expr_->print(indent + 2);
   }
 };
-
+/**
+ * AST node for assignment
+ */
 class AssignmentStmtNode : public StmtNode {
   std::unique_ptr<IdNode> id_;
   std::unique_ptr<ExprNode> value_;
