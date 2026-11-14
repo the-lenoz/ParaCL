@@ -4,13 +4,16 @@
 #include <memory>
 #include <string>
 
+#include "visitor.hpp"
+
 /**
- * Basic class for AST node; Declares print function 
+ * Basic class for AST node; Declares print function
  */
 class ASTNode {
  public:
   virtual ~ASTNode() = default;
   virtual void print(int indent = 0) const = 0;
+  virtual void Accept(visitor::Visitor& visitor) const = 0;
 };
 
 /**
@@ -42,6 +45,10 @@ class QuestionMarkNode : public AtomNode {
   void print(int indent) const override {
     std::cout << std::string(indent, ' ') << "?\n";
   }
+
+  void Accept(visitor::Visitor& visitor) const override {
+    visitor.VisitQuestionMarkNode(this);
+  }
 };
 
 /**
@@ -55,6 +62,14 @@ public:
   void print(int indent) const override {
     std::cout << std::string(indent, ' ') << "Id: " << value_ << '\n';
   }
+
+  const std::string& GetVarName() const {
+    return value_;
+  }
+
+  void Accept(visitor::Visitor& visitor) const override {
+    visitor.VisitIdNode(this);
+  }
 };
 
 /**
@@ -67,6 +82,14 @@ class IntNode : public AtomNode {
   IntNode(int val) : value_(val) {}
   void print(int indent) const override {
     std::cout << std::string(indent, ' ') << "Int: " << value_ << "\n";
+  }
+
+  int GetValue() const {
+    return value_;
+  }
+
+  void Accept(visitor::Visitor& visitor) const override {
+    visitor.VisitIntNode(this);
   }
 };
 
@@ -82,6 +105,14 @@ class ParenExprNode : public AtomNode {
   void print(int indent) const override {
     std::cout << std::string(indent, ' ') << "ParenExpr:\n";
     expr_->print(indent + 2);
+  }
+
+  const ExprNode* GetExprPtr() const {
+    return expr_.get();
+  }
+
+  void Accept(visitor::Visitor& visitor) const override {
+    visitor.VisitParenExprNode(this);
   }
 };
 
@@ -101,6 +132,17 @@ class MulNode : public TermNode {
     left_->print(indent + 2);
     right_->print(indent + 2);
   }
+
+  const TermNode* GetTermPtr() const {
+    return left_.get();
+  }
+  const AtomNode* GetAtomPtr() const {
+    return right_.get();
+  }
+
+  void Accept(visitor::Visitor& visitor) const override {
+    visitor.VisitMulNode(this);
+  }
 };
 
 /**
@@ -119,10 +161,21 @@ class DivNode : public TermNode {
     left_->print(indent + 2);
     right_->print(indent + 2);
   }
+
+  const TermNode* GetTermPtr() const {
+    return left_.get();
+  }
+  const AtomNode* GetAtomPtr() const {
+    return right_.get();
+  }
+
+  void Accept(visitor::Visitor& visitor) const override {
+    visitor.VisitDivNode(this);
+  }
 };
 
 /**
- * Addition AST node 
+ * Addition AST node
  */
 class AddNode : public ArithNode {
   std::unique_ptr<ArithNode> left_;
@@ -137,10 +190,21 @@ class AddNode : public ArithNode {
     left_->print(indent + 2);
     right_->print(indent + 2);
   }
+
+  const ArithNode* GetArithPtr() const {
+    return left_.get();
+  }
+  const TermNode* GetTermPtr() const {
+    return right_.get();
+  }
+
+  void Accept(visitor::Visitor& visitor) const override {
+    visitor.VisitAddNode(this);
+  }
 };
 
 /**
- * Substraction AST node 
+ * Substraction AST node
  */
 class SubNode : public ArithNode {
   std::unique_ptr<ArithNode> left_;
@@ -155,6 +219,17 @@ class SubNode : public ArithNode {
     left_->print(indent + 2);
     right_->print(indent + 2);
   }
+
+  const ArithNode* GetArithPtr() const {
+    return left_.get();
+  }
+  const TermNode* GetTermPtr() const {
+    return right_.get();
+  }
+
+  void Accept(visitor::Visitor& visitor) const override {
+    visitor.VisitSubNode(this);
+  }
 };
 
 /**
@@ -162,7 +237,9 @@ class SubNode : public ArithNode {
  */
 class EqNode : public ExprNode {
   std::unique_ptr<ExprNode> left_;
-  std::unique_ptr<ArithNode> right_; public:
+  std::unique_ptr<ArithNode> right_;
+
+ public:
   EqNode(std::unique_ptr<ExprNode> l, std::unique_ptr<ArithNode> r)
       : left_(std::move(l)), right_(std::move(r)) {}
 
@@ -170,6 +247,17 @@ class EqNode : public ExprNode {
     std::cout << std::string(indent, ' ') << "Op: ==\n";
     left_->print(indent + 2);
     right_->print(indent + 2);
+  }
+
+  const ExprNode* GetExprPtr() const {
+    return left_.get();
+  }
+  const ArithNode* GetArithPtr() const {
+    return right_.get();
+  }
+
+  void Accept(visitor::Visitor& visitor) const override {
+    visitor.VisitEqNode(this);
   }
 };
 
@@ -189,6 +277,17 @@ class LtNode : public ExprNode {
     left_->print(indent + 2);
     right_->print(indent + 2);
   }
+
+  const ExprNode* GetExprPtr() const {
+    return left_.get();
+  }
+  const ArithNode* GetArithPtr() const {
+    return right_.get();
+  }
+
+  void Accept(visitor::Visitor& visitor) const override {
+    visitor.VisitLtNode(this);
+  }
 };
 
 /**
@@ -206,6 +305,17 @@ class GtNode : public ExprNode {
     std::cout << std::string(indent, ' ') << "Op: >\n";
     left_->print(indent + 2);
     right_->print(indent + 2);
+  }
+
+  const ExprNode* GetExprPtr() const {
+    return left_.get();
+  }
+  const ArithNode* GetArithPtr() const {
+    return right_.get();
+  }
+
+  void Accept(visitor::Visitor& visitor) const override {
+    visitor.VisitGtNode(this);
   }
 };
 
@@ -225,6 +335,17 @@ class LteNode : public ExprNode {
     left_->print(indent + 2);
     right_->print(indent + 2);
   }
+
+  const ExprNode* GetExprPtr() const {
+    return left_.get();
+  }
+  const ArithNode* GetArithPtr() const {
+    return right_.get();
+  }
+
+  void Accept(visitor::Visitor& visitor) const override {
+    visitor.VisitLteNode(this);
+  }
 };
 
 /**
@@ -242,6 +363,17 @@ class GteNode : public ExprNode {
     std::cout << std::string(indent, ' ') << "Op: >=\n";
     left_->print(indent + 2);
     right_->print(indent + 2);
+  }
+
+  const ExprNode* GetExprPtr() const {
+    return left_.get();
+  }
+  const ArithNode* GetArithPtr() const {
+    return right_.get();
+  }
+
+  void Accept(visitor::Visitor& visitor) const override {
+    visitor.VisitGteNode(this);
   }
 };
 
@@ -273,6 +405,17 @@ class BlockNode : public ASTNode {
       right_->print(indent + 2);
     }
   }
+
+  const ASTNode* GetASTPtr() const {
+    return left_.get();
+  }
+  const StmtNode* GetStmtPtr() const {
+    return right_.get();
+  }
+
+  void Accept(visitor::Visitor& visitor) const override {
+    visitor.VisitBlockNode(this);
+  }
 };
 
 /**
@@ -292,6 +435,17 @@ public:
     {
       body_->print(indent + 2);
     }
+  }
+
+  const ExprNode* GetExprPtr() const {
+    return condition_.get();
+  }
+  const BlockNode* GetBlockPtr() const {
+    return body_.get();
+  }
+
+  void Accept(visitor::Visitor& visitor) const override {
+    visitor.VisitIfStmtNode(this);
   }
 };
 
@@ -313,6 +467,17 @@ public:
       body_->print(indent + 2);
     }
   }
+
+  const ExprNode* GetExprPtr() const {
+    return condition_.get();
+  }
+  const BlockNode* GetBlockPtr() const {
+    return body_.get();
+  }
+
+  void Accept(visitor::Visitor& visitor) const override {
+    visitor.VisitWhileStmtNode(this);
+  }
 };
 
 /**
@@ -328,6 +493,14 @@ public:
     std::cout << std::string(indent, ' ') << "print statement: \n";
     expr_->print(indent + 2);
   }
+
+  const ExprNode* GetExprPtr() const {
+    return expr_.get();
+  }
+
+  void Accept(visitor::Visitor& visitor) const override {
+    visitor.VisitPrintStmtNode(this);
+  }
 };
 /**
  * AST node for assignment
@@ -342,7 +515,18 @@ public:
     std::cout<<std::string(indent, ' ') << "Assignment statement: \n";
     id_->print(indent +2);
     value_->print(indent +2);
-  }  
+  }
+
+  const IdNode* GetIdPtr() const {
+    return id_.get();
+  }
+  const ExprNode* GetExprPtr() const {
+    return value_.get();
+  }
+
+  void Accept(visitor::Visitor& visitor) const override {
+    visitor.VisitAssignmentStmtNode(this);
+  }
 };
 
 
