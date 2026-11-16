@@ -1,10 +1,13 @@
 #include <utility>
 
 #include "AST.hpp"
+#include <iostream>
 
 import parser;
 import interpreter;
 import exceptions;
+
+import dumper;
 
 int main() try {
   std::unique_ptr<ASTNode> root;
