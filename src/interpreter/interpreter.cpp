@@ -147,7 +147,7 @@ void InterpreterVisitor::VisitEqNode(
   int left_res = std::get<int>(Eval(left));
   int right_res = std::get<int>(Eval(right));
 
-  val_ = static_cast<bool>(left_res == right_res);
+  val_ = static_cast<int>(left_res == right_res);
 }
 
 void InterpreterVisitor::VisitLtNode(
@@ -163,7 +163,7 @@ void InterpreterVisitor::VisitLtNode(
   int left_res = std::get<int>(Eval(left));
   int right_res = std::get<int>(Eval(right));
 
-  val_ = static_cast<bool>(left_res < right_res);
+  val_ = static_cast<int>(left_res < right_res);
 }
 
 void InterpreterVisitor::VisitGtNode(
@@ -179,7 +179,7 @@ void InterpreterVisitor::VisitGtNode(
   int left_res = std::get<int>(Eval(left));
   int right_res = std::get<int>(Eval(right));
 
-  val_ = static_cast<bool>(left_res > right_res);
+  val_ = static_cast<int>(left_res > right_res);
 }
 
 void InterpreterVisitor::VisitLteNode(
@@ -195,7 +195,7 @@ void InterpreterVisitor::VisitLteNode(
   int left_res = std::get<int>(Eval(left));
   int right_res = std::get<int>(Eval(right));
 
-  val_ = static_cast<bool>(left_res <= right_res);
+  val_ = static_cast<int>(left_res <= right_res);
 }
 
 void InterpreterVisitor::VisitGteNode(
@@ -211,7 +211,7 @@ void InterpreterVisitor::VisitGteNode(
   int left_res = std::get<int>(Eval(left));
   int right_res = std::get<int>(Eval(right));
 
-  val_ = static_cast<bool>(left_res >= right_res);
+  val_ = static_cast<int>(left_res >= right_res);
 }
 
 void InterpreterVisitor::VisitBlockNode(
@@ -239,9 +239,9 @@ void InterpreterVisitor::VisitIfStmtNode(
   const ExprNode* left = node->GetExprPtr();
   const BlockNode* right = node->GetBlockPtr();
 
-  bool left_res = std::get<bool>(Eval(left));
+  int left_res = std::get<int>(Eval(left));
 
-  if (right && left_res) {
+  if (right && left_res != 0) {
     right->Accept(*this);
   }
 }
@@ -255,7 +255,7 @@ void InterpreterVisitor::VisitWhileStmtNode(
   const BlockNode* right = node->GetBlockPtr();
 
   bool left_res;
-  while (right && (left_res = std::get<bool>(Eval(left)))) {
+  while (right && (left_res = std::get<int>(Eval(left))) != 0) {
     right->Accept(*this);
   }
 }
