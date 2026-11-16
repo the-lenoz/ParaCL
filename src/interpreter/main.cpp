@@ -10,7 +10,7 @@ int main() try {
   std::unique_ptr<ASTNode> root;
   YY::Parser parser(&root);
   parser.parse();
-  //root->print();
+  //root->Print();
 
   interpreter::InterpreterVisitor visitor{};
 

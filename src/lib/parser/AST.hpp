@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 
+#include "AST_interface.hpp"
 #include "visitor.hpp"
 
 /**
@@ -12,7 +13,7 @@
 class ASTNode {
  public:
   virtual ~ASTNode() = default;
-  virtual void print(int indent = 0) const = 0;
+  virtual void Print(int indent = 0) const = 0;
   virtual void Accept(visitor::Visitor& visitor) const = 0;
 };
 
@@ -42,7 +43,7 @@ class AtomNode : public TermNode {};
 class QuestionMarkNode : public AtomNode {
  public:
   QuestionMarkNode() {}
-  void print(int indent) const override {
+  void Print(int indent) const override {
     std::cout << std::string(indent, ' ') << "?\n";
   }
 
@@ -59,7 +60,7 @@ class IdNode : public AtomNode {
 
 public:
   IdNode(const std::string& val) : value_(val) {}
-  void print(int indent) const override {
+  void Print(int indent) const override {
     std::cout << std::string(indent, ' ') << "Id: " << value_ << '\n';
   }
 
@@ -80,7 +81,7 @@ class IntNode : public AtomNode {
 
  public:
   IntNode(int val) : value_(val) {}
-  void print(int indent) const override {
+  void Print(int indent) const override {
     std::cout << std::string(indent, ' ') << "Int: " << value_ << "\n";
   }
 
@@ -102,9 +103,9 @@ class ParenExprNode : public AtomNode {
 
  public:
   ParenExprNode(std::unique_ptr<ExprNode> expr) : expr_(std::move(expr)) {}
-  void print(int indent) const override {
+  void Print(int indent) const override {
     std::cout << std::string(indent, ' ') << "ParenExpr:\n";
-    expr_->print(indent + 2);
+    expr_->Print(indent + 2);
   }
 
   const ExprNode* GetExprPtr() const {
@@ -127,10 +128,10 @@ class MulNode : public TermNode {
   MulNode(std::unique_ptr<TermNode> l, std::unique_ptr<AtomNode> r)
       : left_(std::move(l)), right_(std::move(r)) {}
 
-  void print(int indent) const override {
+  void Print(int indent) const override {
     std::cout << std::string(indent, ' ') << "Op: *\n";
-    left_->print(indent + 2);
-    right_->print(indent + 2);
+    left_->Print(indent + 2);
+    right_->Print(indent + 2);
   }
 
   const TermNode* GetTermPtr() const {
@@ -156,10 +157,10 @@ class DivNode : public TermNode {
   DivNode(std::unique_ptr<TermNode> l, std::unique_ptr<AtomNode> r)
       : left_(std::move(l)), right_(std::move(r)) {}
 
-  void print(int indent) const override {
+  void Print(int indent) const override {
     std::cout << std::string(indent, ' ') << "Op: /\n";
-    left_->print(indent + 2);
-    right_->print(indent + 2);
+    left_->Print(indent + 2);
+    right_->Print(indent + 2);
   }
 
   const TermNode* GetTermPtr() const {
@@ -185,10 +186,10 @@ class AddNode : public ArithNode {
   AddNode(std::unique_ptr<ArithNode> l, std::unique_ptr<TermNode> r)
       : left_(std::move(l)), right_(std::move(r)) {}
 
-  void print(int indent) const override {
+  void Print(int indent) const override {
     std::cout << std::string(indent, ' ') << "Op: +\n";
-    left_->print(indent + 2);
-    right_->print(indent + 2);
+    left_->Print(indent + 2);
+    right_->Print(indent + 2);
   }
 
   const ArithNode* GetArithPtr() const {
@@ -214,10 +215,10 @@ class SubNode : public ArithNode {
   SubNode(std::unique_ptr<ArithNode> l, std::unique_ptr<TermNode> r)
       : left_(std::move(l)), right_(std::move(r)) {}
 
-  void print(int indent) const override {
+  void Print(int indent) const override {
     std::cout << std::string(indent, ' ') << "Op: -\n";
-    left_->print(indent + 2);
-    right_->print(indent + 2);
+    left_->Print(indent + 2);
+    right_->Print(indent + 2);
   }
 
   const ArithNode* GetArithPtr() const {
@@ -243,10 +244,10 @@ class EqNode : public ExprNode {
   EqNode(std::unique_ptr<ExprNode> l, std::unique_ptr<ArithNode> r)
       : left_(std::move(l)), right_(std::move(r)) {}
 
-  void print(int indent) const override {
+  void Print(int indent) const override {
     std::cout << std::string(indent, ' ') << "Op: ==\n";
-    left_->print(indent + 2);
-    right_->print(indent + 2);
+    left_->Print(indent + 2);
+    right_->Print(indent + 2);
   }
 
   const ExprNode* GetExprPtr() const {
@@ -272,10 +273,10 @@ class LtNode : public ExprNode {
   LtNode(std::unique_ptr<ExprNode> l, std::unique_ptr<ArithNode> r)
       : left_(std::move(l)), right_(std::move(r)) {}
 
-  void print(int indent) const override {
+  void Print(int indent) const override {
     std::cout << std::string(indent, ' ') << "Op: <\n";
-    left_->print(indent + 2);
-    right_->print(indent + 2);
+    left_->Print(indent + 2);
+    right_->Print(indent + 2);
   }
 
   const ExprNode* GetExprPtr() const {
@@ -301,10 +302,10 @@ class GtNode : public ExprNode {
   GtNode(std::unique_ptr<ExprNode> l, std::unique_ptr<ArithNode> r)
       : left_(std::move(l)), right_(std::move(r)) {}
 
-  void print(int indent) const override {
+  void Print(int indent) const override {
     std::cout << std::string(indent, ' ') << "Op: >\n";
-    left_->print(indent + 2);
-    right_->print(indent + 2);
+    left_->Print(indent + 2);
+    right_->Print(indent + 2);
   }
 
   const ExprNode* GetExprPtr() const {
@@ -330,10 +331,10 @@ class LteNode : public ExprNode {
   LteNode(std::unique_ptr<ExprNode> l, std::unique_ptr<ArithNode> r)
       : left_(std::move(l)), right_(std::move(r)) {}
 
-  void print(int indent) const override {
+  void Print(int indent) const override {
     std::cout << std::string(indent, ' ') << "Op: <=\n";
-    left_->print(indent + 2);
-    right_->print(indent + 2);
+    left_->Print(indent + 2);
+    right_->Print(indent + 2);
   }
 
   const ExprNode* GetExprPtr() const {
@@ -359,10 +360,10 @@ class GteNode : public ExprNode {
   GteNode(std::unique_ptr<ExprNode> l, std::unique_ptr<ArithNode> r)
       : left_(std::move(l)), right_(std::move(r)) {}
 
-  void print(int indent) const override {
+  void Print(int indent) const override {
     std::cout << std::string(indent, ' ') << "Op: >=\n";
-    left_->print(indent + 2);
-    right_->print(indent + 2);
+    left_->Print(indent + 2);
+    right_->Print(indent + 2);
   }
 
   const ExprNode* GetExprPtr() const {
@@ -397,12 +398,12 @@ class BlockNode : public ASTNode {
   BlockNode(std::unique_ptr<ASTNode> l, std::unique_ptr<StmtNode> r)
       : left_(std::move(l)), right_(std::move(r)) {}
 
-  void print(int indent) const override {
+  void Print(int indent) const override {
     std::cout << std::string(indent, ' ') << "Block: \n";
-    left_->print(indent + 2);
+    left_->Print(indent + 2);
     if (right_)
     {
-      right_->print(indent + 2);
+      right_->Print(indent + 2);
     }
   }
 
@@ -428,12 +429,12 @@ public:
   IfStmtNode(std::unique_ptr<ExprNode> l, std::unique_ptr<BlockNode> r)
     : condition_(std::move(l)), body_(std::move(r)) {}
 
-  virtual void print(int indent) const override {
+  virtual void Print(int indent) const override {
     std::cout << std::string(indent, ' ') << "If statement: \n";
-    condition_->print(indent + 2);
+    condition_->Print(indent + 2);
     if (body_)
     {
-      body_->print(indent + 2);
+      body_->Print(indent + 2);
     }
   }
 
@@ -459,12 +460,12 @@ public:
   WhileStmtNode(std::unique_ptr<ExprNode> condition, std::unique_ptr<BlockNode> body)
     : condition_(std::move(condition)), body_(std::move(body)) {}
 
-  virtual void print(int indent) const override {
+  virtual void Print(int indent) const override {
     std::cout << std::string(indent, ' ') << "While statement: \n";
-    condition_->print(indent + 2);
+    condition_->Print(indent + 2);
     if (body_)
     {
-      body_->print(indent + 2);
+      body_->Print(indent + 2);
     }
   }
 
@@ -489,9 +490,9 @@ public:
   PrintStmtNode(std::unique_ptr<ExprNode> expr)
     : expr_(std::move(expr)) {}
 
-  virtual void print(int indent) const override {
+  virtual void Print(int indent) const override {
     std::cout << std::string(indent, ' ') << "print statement: \n";
-    expr_->print(indent + 2);
+    expr_->Print(indent + 2);
   }
 
   const ExprNode* GetExprPtr() const {
@@ -511,10 +512,10 @@ class AssignmentStmtNode : public StmtNode {
 public:
   AssignmentStmtNode(std::unique_ptr<IdNode> id, std::unique_ptr<ExprNode> value)
     : id_(std::move(id)), value_(std::move(value)) {}
-   virtual void print(int indent) const override {
+   virtual void Print(int indent) const override {
     std::cout<<std::string(indent, ' ') << "Assignment statement: \n";
-    id_->print(indent +2);
-    value_->print(indent +2);
+    id_->Print(indent +2);
+    value_->Print(indent +2);
   }
 
   const IdNode* GetIdPtr() const {
