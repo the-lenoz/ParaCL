@@ -10,4 +10,4 @@ while (N > 0)
   N = N - 1;
 }
 
-print b;
+print a;

@@ -18,7 +18,7 @@ add_custom_command(
 add_custom_command(
     OUTPUT "${GENERATED_DIR}/lex.yy.cc"
     COMMAND ${FLEX_EXECUTABLE} -o "${GENERATED_DIR}/lex.yy.cc" "${CMAKE_CURRENT_SOURCE_DIR}/lexer.l"
-    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/lexer.l" "${GENERATED_DIR}/parser.tab.hh" # Lexer generation depends on parser 
+    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/lexer.l" "${GENERATED_DIR}/parser.tab.hh" # Lexer generation depends on parser
     COMMENT "Generating Flex lexer"
     VERBATIM
 )
@@ -26,9 +26,10 @@ add_custom_command(
 add_library(parser_lib OBJECT)
 
 target_sources(parser_lib
-    PUBLIC FILE_SET CXX_MODULES
-    FILES
-        parser.cppm
+    PUBLIC
+        FILE_SET CXX_MODULES
+        FILES
+            parser.cppm
 )
 
 target_sources(parser_lib PRIVATE

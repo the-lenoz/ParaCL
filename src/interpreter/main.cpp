@@ -1,12 +1,26 @@
 #include <utility>
 
 #include "AST.hpp"
-import parser;
+#include <iostream>
 
-int main() {
+import parser;
+import interpreter;
+import exceptions;
+
+import dumper;
+
+int main() try {
   std::unique_ptr<ASTNode> root;
   YY::Parser parser(&root);
   parser.parse();
-  root->print();
-  return 0;
+
+
+  interpreter::InterpreterVisitor visitor{};
+
+  interpreter::Execute(std::move(root), visitor);
+
+} catch(const exception::ParaCLException& e) {
+  std::cout << e.what() << '\n';
+  e.Log();
+  return static_cast<int>(e.GetErrorCode());
 }

@@ -83,6 +83,7 @@
 
 												
 %parse-param { std::unique_ptr<ASTNode>* root }
+//			%lex-param   { yyFlexLexer& lexer }
 
 %%
 
