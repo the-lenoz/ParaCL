@@ -10,13 +10,14 @@ int main() try {
   std::unique_ptr<ASTNode> root;
   YY::Parser parser(&root);
   parser.parse();
-  //root->Print();
+
 
   interpreter::InterpreterVisitor visitor{};
 
   interpreter::Execute(std::move(root), visitor);
 
-} catch(const exception::Exception& e) {
+} catch(const exception::ParaCLException& e) {
   std::cout << e.what() << '\n';
   e.Log();
+  return static_cast<int>(e.GetErrorCode());
 }

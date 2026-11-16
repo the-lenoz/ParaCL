@@ -1,10 +1,8 @@
 module;
 
-#include <memory>
 #include <iostream>
 #include <cstdio>
 #include <cassert>
-#include <exception>
 #include <variant>
 
 #include "AST.hpp"
@@ -94,7 +92,7 @@ void InterpreterVisitor::VisitDivNode(
   int right_res = std::get<int>(Eval(right));
 
   if (right == 0) {
-    throw exception::Exception{
+    throw exception::ParaCLException{
       "Division by zero!",
       exception::ErrorCode::kZeroDiv};
   }

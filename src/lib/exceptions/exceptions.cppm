@@ -14,9 +14,9 @@ export enum class ErrorCode {
   kZeroDiv = 1
 };
 
-export class Exception : public std::runtime_error {
+export class ParaCLException : public std::runtime_error {
  public:
-  explicit Exception(const char* message, ErrorCode err_code)
+  explicit ParaCLException(const char* message, ErrorCode err_code)
       : std::runtime_error(message), err_code_{err_code} {}
 
   const ErrorCode& GetErrorCode() const noexcept { return err_code_; }
