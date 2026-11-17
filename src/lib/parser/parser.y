@@ -32,6 +32,7 @@
 %token ASSIGN
 
 %token EQ
+%token NEQ
 %token LT
 %token GT
 %token LTE
@@ -62,6 +63,7 @@
 
 %type <std::unique_ptr<ExprNode>> expr
 %type <std::unique_ptr<EqNode>> eq
+%type <std::unique_ptr<NeqNode>> neq
 %type <std::unique_ptr<LtNode>> lt
 %type <std::unique_ptr<GtNode>> gt
 %type <std::unique_ptr<LteNode>> lte
@@ -76,6 +78,8 @@
 %type <std::unique_ptr<DivNode>> div
 
 %type <std::unique_ptr<AtomNode>> atom
+%type <std::unique_ptr<UnaryMinusNode>> unary_minus
+%type <std::unique_ptr<UnaryPlusNode>> unary_plus
 %type <std::unique_ptr<ParenExprNode>> paren_expr
 %type <std::unique_ptr<QuestionMarkNode>> question_mark
 %type <std::unique_ptr<IdNode>> id
@@ -95,9 +99,6 @@ program:
 block:
   /* empty */ { 
     $$ = nullptr;
-  }
-  | stmt {
-      $$ = std::make_unique<BlockNode>(std::move($1), nullptr);
   }
   | block stmt {
       $$ = std::make_unique<BlockNode>(std::move($1), std::move($2));
@@ -129,6 +130,7 @@ assignment:
 expr:
   arith { $$ = std::move($1); }
   | eq { $$ = std::move($1); }
+  | neq { $$ = std::move($1); }
   | lt { $$ = std::move($1); }
   | gt { $$ = std::move($1); }
   | lte { $$ = std::move($1); }
@@ -137,6 +139,10 @@ expr:
 eq:		
   expr EQ arith {
     $$ = std::make_unique<EqNode>(std::move($1), std::move($3));
+  };
+neq:		
+  expr NEQ arith {
+    $$ = std::make_unique<NeqNode>(std::move($1), std::move($3));
   };
 lt:		
   expr LT arith {
@@ -179,10 +185,16 @@ div:
       $$ = std::make_unique<DivNode>(std::move($1), std::move($3));
   };
 atom:
-  paren_expr { $$ = std::move($1); }
+  unary_minus { $$ = std::move($1); }
+  | unary_plus { $$ = std::move($1); }
+  | paren_expr { $$ = std::move($1); }
   | question_mark { $$ = std::move($1); }
   | number { $$ = std::move($1); }
   | id { $$ = std::move($1); }
+unary_minus:
+  MINUS atom { $$ = std::make_unique<UnaryMinusNode>(std::move($2)); };
+unary_plus:	
+  PLUS atom { $$ = std::make_unique<UnaryPlusNode>(std::move($2)); };;
 paren_expr:
   LPAREN expr RPAREN {
       $$ = std::make_unique<ParenExprNode>(std::move($2));

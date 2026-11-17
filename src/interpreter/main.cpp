@@ -7,8 +7,6 @@ import parser;
 import interpreter;
 import exceptions;
 
-import dumper;
-
 int main() try {
   std::unique_ptr<ASTNode> root;
   YY::Parser parser(&root);

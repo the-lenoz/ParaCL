@@ -99,6 +99,34 @@ class ParenExprNode : public AtomNode {
 };
 
 /**
+ * Unary minus AST node
+ */
+class UnaryMinusNode : public AtomNode {
+  std::unique_ptr<AtomNode> atom_;
+
+ public:
+  UnaryMinusNode(std::unique_ptr<AtomNode> atom) : atom_(std::move(atom)) {}
+  const ExprNode* GetAtomPtr() const { return atom_.get(); }
+  void Accept(visitor::Visitor& visitor) const override {
+    visitor.VisitUnaryMinusNode(this);
+  }
+};
+
+/**
+ * Unary minus AST node
+ */
+class UnaryPlusNode : public AtomNode {
+  std::unique_ptr<AtomNode> atom_;
+
+ public:
+  UnaryPlusNode(std::unique_ptr<AtomNode> atom) : atom_(std::move(atom)) {}
+  const ExprNode* GetAtomPtr() const { return atom_.get(); }
+  void Accept(visitor::Visitor& visitor) const override {
+    visitor.VisitUnaryPlusNode(this);
+  }
+};
+
+/**
  * Multiplication AST node
  */
 class MulNode : public TermNode {
@@ -191,6 +219,24 @@ class EqNode : public ExprNode {
 };
 
 /**
+ * AST node for '!=' operator
+ */
+class NeqNode : public ExprNode {
+  std::unique_ptr<ExprNode> left_;
+  std::unique_ptr<ArithNode> right_;
+
+ public:
+  NeqNode(std::unique_ptr<ExprNode> l, std::unique_ptr<ArithNode> r)
+      : left_(std::move(l)), right_(std::move(r)) {}
+  const ExprNode* GetExprPtr() const { return left_.get(); }
+  const ArithNode* GetArithPtr() const { return right_.get(); }
+
+  void Accept(visitor::Visitor& visitor) const override {
+    visitor.VisitNeqNode(this);
+  }
+};
+
+/**
  * AST node for '<' operator
  */
 class LtNode : public ExprNode {
@@ -275,16 +321,16 @@ class StmtNode : public ASTNode {};
 /**
  * AST node for statement block.
  * if there is only one statement, the
- * right_ field is nullptr
+ * left_ field is nullptr
  */
 class BlockNode : public ASTNode {
-  std::unique_ptr<ASTNode> left_;
+  std::unique_ptr<BlockNode> left_;
   std::unique_ptr<StmtNode> right_;
 
  public:
-  BlockNode(std::unique_ptr<ASTNode> l, std::unique_ptr<StmtNode> r)
+  BlockNode(std::unique_ptr<BlockNode> l, std::unique_ptr<StmtNode> r)
       : left_(std::move(l)), right_(std::move(r)) {}
-  const ASTNode* GetASTPtr() const { return left_.get(); }
+  const BlockNode* GetBlockPtr() const { return left_.get(); }
   const StmtNode* GetStmtPtr() const { return right_.get(); }
 
   void Accept(visitor::Visitor& visitor) const override {
@@ -346,6 +392,7 @@ class PrintStmtNode : public StmtNode {
     visitor.VisitPrintStmtNode(this);
   }
 };
+
 /**
  * AST node for assignment
  */

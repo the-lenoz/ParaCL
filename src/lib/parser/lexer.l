@@ -26,6 +26,7 @@
 "=" { return YY::Parser::token::ASSIGN; }
 
 "==" { return YY::Parser::token::EQ; }
+"!=" { return YY::Parser::token::NEQ; }
 "<" { return YY::Parser::token::LT; }
 ">" { return YY::Parser::token::GT; }
 "<=" { return YY::Parser::token::LTE; }

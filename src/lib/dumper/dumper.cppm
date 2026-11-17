@@ -32,6 +32,24 @@ export class DumpVisitor : public visitor::Visitor {
     indent_ -= 2;
   }
 
+  void VisitUnaryMinusNode(const UnaryMinusNode* node) override {
+    std::println("{:{}}UnaryMinusNode:", "", indent_);
+    indent_ += 2;
+
+    node->GetAtomPtr()->Accept(*this);
+
+    indent_ -= 2;
+  }
+
+  void VisitUnaryPlusNode(const UnaryPlusNode* node) override {
+    std::println("{:{}}UnaryPlusNode:", "", indent_);
+    indent_ += 2;
+
+    node->GetAtomPtr()->Accept(*this);
+
+    indent_ -= 2;
+  }
+
   void VisitMulNode(const MulNode* node) override {
     std::println("{:{}}MulNode:", "", indent_);
     indent_ += 2;
@@ -74,6 +92,16 @@ export class DumpVisitor : public visitor::Visitor {
 
   void VisitEqNode(const EqNode* node) override {
     std::println("{:{}}EqNode:", "", indent_);
+    indent_ += 2;
+
+    node->GetExprPtr()->Accept(*this);
+    node->GetArithPtr()->Accept(*this);
+
+    indent_ -= 2;
+  }
+
+  void VisitNeqNode(const NeqNode* node) override {
+    std::println("{:{}}NeqNode:", "", indent_);
     indent_ += 2;
 
     node->GetExprPtr()->Accept(*this);
@@ -125,10 +153,10 @@ export class DumpVisitor : public visitor::Visitor {
   void VisitBlockNode(const BlockNode* node) override {
     std::println("{:{}}BlockNode:", "", indent_);
     indent_ += 2;
-    node->GetASTPtr()->Accept(*this);
-    if (node->GetStmtPtr()) {
-      node->GetStmtPtr()->Accept(*this);
+    if (node->GetBlockPtr()) {
+      node->GetBlockPtr()->Accept(*this);
     }
+    node->GetStmtPtr()->Accept(*this);
 
     indent_ -= 2;
   }
