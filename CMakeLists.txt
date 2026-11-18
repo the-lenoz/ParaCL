@@ -1,12 +1,15 @@
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.28 FATAL_ERROR)
 project(ParaCL LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_CXX_SCAN_FOR_MODULES ON)
+
+
+include(cmake/CPM.cmake)
 
 add_subdirectory(src)
 

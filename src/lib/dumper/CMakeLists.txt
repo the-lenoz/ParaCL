@@ -6,4 +6,4 @@ target_sources(dumper
       dumper.cppm
 )
 
-target_link_libraries(dumper PRIVATE parser_lib)
+target_link_libraries(dumper PUBLIC parser_lib)
