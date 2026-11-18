@@ -1,5 +1,6 @@
 %skeleton "lalr1.cc"
 %require "3.2"
+%language "c++"
 %header
 %defines
 %define api.parser.class {Parser}
@@ -7,16 +8,21 @@
 %define api.value.type variant
 %define parse.error verbose
 
-%code provides {
-    #define YY_DECL int yylex(YY::Parser::semantic_type* yylval)
-    YY_DECL;
-}
-
 %code requires {
     #include <memory>
     #include <iostream>
     #include <utility>
     #include "AST.hpp"
+    namespace YY{
+      class ParaLexer;
+    } 
+}
+
+%code {
+    #include "lexer.hpp"
+    int yylex(YY::Parser::semantic_type* yylval, YY::ParaLexer& lexer) {
+        return lexer.yylex(yylval);
+    }
 }
 
 
@@ -86,8 +92,9 @@
 %type <std::unique_ptr<IntNode>> number
 
 												
+%parse-param { YY::ParaLexer& lexer }
 %parse-param { std::unique_ptr<ASTNode>* root }
-//			%lex-param   { yyFlexLexer& lexer }
+%lex-param   { YY::ParaLexer& lexer }
 
 %%
 
