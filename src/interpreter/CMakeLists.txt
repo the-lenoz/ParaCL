@@ -10,4 +10,4 @@ target_sources(paracl
     interpreter.cpp
 )
 
-target_link_libraries(paracl PRIVATE exceptions environment parser_lib)
+target_link_libraries(paracl PRIVATE exceptions environment parser_lib dumper)

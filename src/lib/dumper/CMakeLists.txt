@@ -4,6 +4,8 @@ target_sources(dumper
     FILE_SET CXX_MODULES
     FILES
       dumper.cppm
+      one_line_dumper.cppm
+      graphviz_dumper.cppm
 )
 
 target_link_libraries(dumper PUBLIC parser_lib)
