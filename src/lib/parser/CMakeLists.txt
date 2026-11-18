@@ -7,23 +7,40 @@ set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 file(MAKE_DIRECTORY ${GENERATED_DIR})
 
 
-add_custom_command(
-    OUTPUT "${GENERATED_DIR}/parser.tab.cc" "${GENERATED_DIR}/parser.tab.hh"
-    COMMAND ${BISON_EXECUTABLE} -d "${CMAKE_CURRENT_SOURCE_DIR}/parser.y" -o "${GENERATED_DIR}/parser.tab.cc"
-    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/parser.y"
-    COMMENT "Generating Bison parser"
-    VERBATIM
+
+BISON_TARGET(ParaCLParser
+    "${CMAKE_CURRENT_SOURCE_DIR}/parser.y"
+    "${GENERATED_DIR}/parser.tab.cc"
+    DEFINES_FILE "${GENERATED_DIR}/parser.tab.hh"
 )
 
-add_custom_command(
-    OUTPUT "${GENERATED_DIR}/lex.yy.cc"
-    COMMAND ${FLEX_EXECUTABLE} -o "${GENERATED_DIR}/lex.yy.cc" "${CMAKE_CURRENT_SOURCE_DIR}/lexer.l"
-    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/lexer.l" "${GENERATED_DIR}/parser.tab.hh" # Lexer generation depends on parser
-    COMMENT "Generating Flex lexer"
-    VERBATIM
+
+FLEX_TARGET(ParaCLLexer
+    "${CMAKE_CURRENT_SOURCE_DIR}/lexer.l"
+    "${GENERATED_DIR}/lex.yy.cc"
 )
+
+ADD_FLEX_BISON_DEPENDENCY(ParaCLLexer ParaCLParser)
+
+add_custom_target(generate_parser DEPENDS
+    ${BISON_ParaCLParser_OUTPUTS}
+    ${FLEX_ParaCLLexer_OUTPUTS}
+)
+
 
 add_library(parser_lib OBJECT)
+
+
+add_dependencies(parser_lib generate_parser)
+
+target_sources(parser_lib PRIVATE
+    ${BISON_ParaCLParser_OUTPUTS}
+    ${FLEX_ParaCLLexer_OUTPUTS}
+)
+
+target_include_directories(parser_lib
+    PRIVATE ${GENERATED_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${FLEX_INCLUDE_DIR}
+    INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_sources(parser_lib
     PUBLIC
@@ -32,14 +49,6 @@ target_sources(parser_lib
             parser.cppm
 )
 
-target_sources(parser_lib PRIVATE
-    "${GENERATED_DIR}/parser.tab.cc"
-    "${GENERATED_DIR}/lex.yy.cc"
-)
-
-target_include_directories(parser_lib
-    PRIVATE ${GENERATED_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
-    INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
 
 

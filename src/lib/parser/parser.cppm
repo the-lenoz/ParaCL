@@ -7,7 +7,7 @@ module;
 export module parser;
 
 export namespace YY {
-	 using YY::ParaLexer;
+    using YY::ParaLexer;
     using YY::Parser;
 }
 
