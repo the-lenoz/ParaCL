@@ -1,16 +1,22 @@
+%option c++
+%option yyclass="YY::ParaLexer"
+     
 %{
   #include "parser.tab.hh"
+  #include "lexer.hpp"
   #include <cstdlib>
   #include <iostream>
 
 
-  #ifndef YY_DECL
-  #define YY_DECL int yylex(YY::Parser::semantic_type* yylval)
-  YY_DECL;
-  #endif
+  #undef YY_DECL
+  #define YY_DECL int YY::ParaLexer::yylex(YY::Parser::semantic_type* yylval)
+
+  int yyFlexLexer::yywrap() {
+    return 1;
+  }
+
 %}
 
-%option noyywrap
 
 %%
 
@@ -26,6 +32,7 @@
 "=" { return YY::Parser::token::ASSIGN; }
 
 "==" { return YY::Parser::token::EQ; }
+"!=" { return YY::Parser::token::NEQ; }
 "<" { return YY::Parser::token::LT; }
 ">" { return YY::Parser::token::GT; }
 "<=" { return YY::Parser::token::LTE; }
@@ -49,6 +56,14 @@
 [A-Za-z_][A-Za-z_0-9]* {
   yylval->emplace<std::string>(yytext);
   return YY::Parser::token::ID_TOKEN;
+}
+
+"//".* {
+  /* Ignore oneline comments */
+}
+
+"/*"([^*]|\*+[^*/])*\*+"/" {
+  /* Ignore multiline comments */
 }
 
 [ \t\n\r]+ {

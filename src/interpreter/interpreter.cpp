@@ -1,8 +1,8 @@
 module;
 
-#include <iostream>
-#include <cstdio>
 #include <cassert>
+#include <cstdio>
+#include <iostream>
 #include <variant>
 
 #include "AST.hpp"
@@ -13,18 +13,14 @@ import exceptions;
 
 namespace interpreter {
 
-IRV InterpreterVisitor::Eval(
-  const ASTNode* node
-) {
+IRV InterpreterVisitor::Eval(const ASTNode* node) {
   assert(node);
 
   node->Accept(*this);
   return val_;
 }
 
-void InterpreterVisitor::VisitQuestionMarkNode(
-  const QuestionMarkNode* node
-) {
+void InterpreterVisitor::VisitQuestionMarkNode(const QuestionMarkNode* node) {
   assert(node);
   clearerr(stdin);
   std::cin.exceptions(std::ios::failbit | std::ios::badbit);
@@ -35,25 +31,19 @@ void InterpreterVisitor::VisitQuestionMarkNode(
   val_ = val;
 }
 
-void InterpreterVisitor::VisitIdNode(
-  const IdNode* node
-) {
+void InterpreterVisitor::VisitIdNode(const IdNode* node) {
   assert(node);
 
   val_ = GetVarValue(node->GetVarName());
 }
 
-void InterpreterVisitor::VisitIntNode(
-  const IntNode* node
-) {
+void InterpreterVisitor::VisitIntNode(const IntNode* node) {
   assert(node);
 
   val_ = node->GetValue();
 }
 
-void InterpreterVisitor::VisitParenExprNode(
-  const ParenExprNode* node
-) {
+void InterpreterVisitor::VisitParenExprNode(const ParenExprNode* node) {
   assert(node);
 
   const ExprNode* expr_node = node->GetExprPtr();
@@ -62,9 +52,29 @@ void InterpreterVisitor::VisitParenExprNode(
   expr_node->Accept(*this);
 }
 
-void InterpreterVisitor::VisitMulNode(
-  const MulNode* node
-) {
+void InterpreterVisitor::VisitUnaryMinusNode(const UnaryMinusNode* node) {
+  assert(node);
+
+  const ExprNode* expr_node = node->GetAtomPtr();
+  assert(expr_node);
+
+  expr_node->Accept(*this);
+
+  val_ = -std::get<int>(val_);
+}
+
+void InterpreterVisitor::VisitUnaryPlusNode(const UnaryPlusNode* node) {
+  assert(node);
+
+  const ExprNode* expr_node = node->GetAtomPtr();
+  assert(expr_node);
+
+  expr_node->Accept(*this);
+
+  // Do nothing!
+}
+
+void InterpreterVisitor::VisitMulNode(const MulNode* node) {
   assert(node);
 
   const TermNode* left = node->GetTermPtr();
@@ -78,9 +88,7 @@ void InterpreterVisitor::VisitMulNode(
   val_ = left_res * right_res;
 }
 
-void InterpreterVisitor::VisitDivNode(
-  const DivNode* node
-) {
+void InterpreterVisitor::VisitDivNode(const DivNode* node) {
   assert(node);
 
   const TermNode* left = node->GetTermPtr();
@@ -92,17 +100,14 @@ void InterpreterVisitor::VisitDivNode(
   int right_res = std::get<int>(Eval(right));
 
   if (right == 0) {
-    throw exception::ParaCLException{
-      "Division by zero!",
-      exception::ErrorCode::kZeroDiv};
+    throw exception::ParaCLException{"Division by zero!",
+                                     exception::ErrorCode::kZeroDiv};
   }
 
   val_ = left_res / right_res;
 }
 
-void InterpreterVisitor::VisitAddNode(
-  const AddNode* node
-) {
+void InterpreterVisitor::VisitAddNode(const AddNode* node) {
   assert(node);
 
   const ArithNode* left = node->GetArithPtr();
@@ -116,9 +121,7 @@ void InterpreterVisitor::VisitAddNode(
   val_ = left_res + right_res;
 }
 
-void InterpreterVisitor::VisitSubNode(
-  const SubNode* node
-) {
+void InterpreterVisitor::VisitSubNode(const SubNode* node) {
   assert(node);
 
   const ArithNode* left = node->GetArithPtr();
@@ -132,9 +135,7 @@ void InterpreterVisitor::VisitSubNode(
   val_ = left_res - right_res;
 }
 
-void InterpreterVisitor::VisitEqNode(
-  const EqNode* node
-) {
+void InterpreterVisitor::VisitEqNode(const EqNode* node) {
   assert(node);
 
   const ExprNode* left = node->GetExprPtr();
@@ -148,9 +149,21 @@ void InterpreterVisitor::VisitEqNode(
   val_ = static_cast<int>(left_res == right_res);
 }
 
-void InterpreterVisitor::VisitLtNode(
-  const LtNode* node
-) {
+void InterpreterVisitor::VisitNeqNode(const NeqNode* node) {
+  assert(node);
+
+  const ExprNode* left = node->GetExprPtr();
+  const ArithNode* right = node->GetArithPtr();
+
+  assert(left && right);
+
+  int left_res = std::get<int>(Eval(left));
+  int right_res = std::get<int>(Eval(right));
+
+  val_ = static_cast<int>(left_res != right_res);
+}
+
+void InterpreterVisitor::VisitLtNode(const LtNode* node) {
   assert(node);
 
   const ExprNode* left = node->GetExprPtr();
@@ -164,9 +177,7 @@ void InterpreterVisitor::VisitLtNode(
   val_ = static_cast<int>(left_res < right_res);
 }
 
-void InterpreterVisitor::VisitGtNode(
-  const GtNode* node
-) {
+void InterpreterVisitor::VisitGtNode(const GtNode* node) {
   assert(node);
 
   const ExprNode* left = node->GetExprPtr();
@@ -180,9 +191,7 @@ void InterpreterVisitor::VisitGtNode(
   val_ = static_cast<int>(left_res > right_res);
 }
 
-void InterpreterVisitor::VisitLteNode(
-  const LteNode* node
-) {
+void InterpreterVisitor::VisitLteNode(const LteNode* node) {
   assert(node);
 
   const ExprNode* left = node->GetExprPtr();
@@ -196,9 +205,7 @@ void InterpreterVisitor::VisitLteNode(
   val_ = static_cast<int>(left_res <= right_res);
 }
 
-void InterpreterVisitor::VisitGteNode(
-  const GteNode* node
-) {
+void InterpreterVisitor::VisitGteNode(const GteNode* node) {
   assert(node);
 
   const ExprNode* left = node->GetExprPtr();
@@ -212,26 +219,22 @@ void InterpreterVisitor::VisitGteNode(
   val_ = static_cast<int>(left_res >= right_res);
 }
 
-void InterpreterVisitor::VisitBlockNode(
-  const BlockNode* node
-) {
+void InterpreterVisitor::VisitBlockNode(const BlockNode* node) {
   assert(node);
 
-  const ASTNode* left = node->GetASTPtr();
+  const BlockNode* left = node->GetBlockPtr();
   const StmtNode* right = node->GetStmtPtr();
 
-  assert(left);
+  assert(right);
 
-  left->Accept(*this);
-
-  if (right) {
-    right->Accept(*this);
+  if (left) {
+    left->Accept(*this);
   }
+  right->Accept(*this);
+
 }
 
-void InterpreterVisitor::VisitIfStmtNode(
-  const IfStmtNode* node
-) {
+void InterpreterVisitor::VisitIfStmtNode(const IfStmtNode* node) {
   assert(node);
 
   const ExprNode* left = node->GetExprPtr();
@@ -244,9 +247,7 @@ void InterpreterVisitor::VisitIfStmtNode(
   }
 }
 
-void InterpreterVisitor::VisitWhileStmtNode(
-  const WhileStmtNode* node
-) {
+void InterpreterVisitor::VisitWhileStmtNode(const WhileStmtNode* node) {
   assert(node);
 
   const ExprNode* left = node->GetExprPtr();
@@ -258,9 +259,7 @@ void InterpreterVisitor::VisitWhileStmtNode(
   }
 }
 
-void InterpreterVisitor::VisitPrintStmtNode(
-  const PrintStmtNode* node
-) {
+void InterpreterVisitor::VisitPrintStmtNode(const PrintStmtNode* node) {
   assert(node);
 
   const ExprNode* expr = node->GetExprPtr();
@@ -268,16 +267,13 @@ void InterpreterVisitor::VisitPrintStmtNode(
 
   expr->Accept(*this);
 
-  auto lambda = [](const auto& arg) {
-    std::cout << arg;
-  };
+  auto lambda = [](const auto& arg) { std::cout << arg; };
 
   std::visit(lambda, val_);
 }
 
 void InterpreterVisitor::VisitAssignmentStmtNode(
-  const AssignmentStmtNode* node
-) {
+    const AssignmentStmtNode* node) {
   assert(node);
 
   const IdNode* left = node->GetIdPtr();
@@ -289,5 +285,4 @@ void InterpreterVisitor::VisitAssignmentStmtNode(
 
   SetVarValue(left->GetVarName(), value);
 }
-} // interpreter
-
+}  // namespace interpreter

@@ -7,11 +7,11 @@ import parser;
 import interpreter;
 import exceptions;
 
-import dumper;
-
 int main() try {
   std::unique_ptr<ASTNode> root;
-  YY::Parser parser(&root);
+
+  auto lexer = YY::ParaLexer(std::cin, std::cout);
+  YY::Parser parser(lexer, &root);
   parser.parse();
 
 
