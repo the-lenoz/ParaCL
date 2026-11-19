@@ -10,8 +10,11 @@ export module exceptions;
 namespace exception {
 
 export enum class ErrorCode {
-  kCorrect = 0,
-  kZeroDiv = 1
+  kCorrect     = 0,
+  kZeroDiv     = 1,
+  kOpenStream  = 2,
+  kInputFlags  = 3,
+  kInputData   = 4
 };
 
 export class ParaCLException : public std::runtime_error {
