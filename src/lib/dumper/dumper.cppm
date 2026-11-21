@@ -1,4 +1,3 @@
-export module :graphviz_dumper;
 module;
 
 export module dumper;
