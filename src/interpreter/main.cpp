@@ -18,11 +18,10 @@ int main() try {
   parser.parse();
 
 
-  interpreter::InterpreterVisitor visitor{};
+  interpreter::InterpreterVisitor interpreter{};
 
-  dumper::OneLineDumper dumper;
-  root->Accept(dumper);
-  // root->Accept();
+  root->Accept(interpreter);
+  dumper::GraphvizDump(std::cout, root.get());
 } catch(const exception::ParaCLException& e) {
   std::cout << e.what() << '\n';
   e.Log();
