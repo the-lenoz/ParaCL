@@ -15,6 +15,6 @@ class ParaLexer : public yyFlexLexer {
   explicit ParaLexer(std::istream& in, std::ostream& out)
       : yyFlexLexer(in, out) {}
 
-  int yylex(YY::Parser::semantic_type* yylval);
+  Parser::symbol_type next_token();
 };
 }  // namespace YY

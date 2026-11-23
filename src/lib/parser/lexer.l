@@ -9,7 +9,7 @@
 
 
   #undef YY_DECL
-  #define YY_DECL int YY::ParaLexer::yylex(YY::Parser::semantic_type* yylval)
+  #define YY_DECL YY::Parser::symbol_type YY::ParaLexer::next_token()
 
   int yyFlexLexer::yywrap() {
     return 1;
@@ -20,43 +20,37 @@
 
 %%
 
-"{" { return YY::Parser::token::LBRACE; }
-"}" { return YY::Parser::token::RBRACE; }
+"{" { return YY::Parser::make_LBRACE(); }
+"}" { return YY::Parser::make_RBRACE(); }
 
-";" { return YY::Parser::token::SEMICOLON; }
+";" { return YY::Parser::make_SEMICOLON(); }
 
-"if" { return YY::Parser::token::IF; }
-"while" { return YY::Parser::token::WHILE; }
-"print" { return YY::Parser::token::PRINT; }
+"if" { return YY::Parser::make_IF(); }
+"while" { return YY::Parser::make_WHILE(); }
+"print" { return YY::Parser::make_PRINT(); }
 
-"=" { return YY::Parser::token::ASSIGN; }
+"=" { return YY::Parser::make_ASSIGN(); }
 
-"==" { return YY::Parser::token::EQ; }
-"!=" { return YY::Parser::token::NEQ; }
-"<" { return YY::Parser::token::LT; }
-">" { return YY::Parser::token::GT; }
-"<=" { return YY::Parser::token::LTE; }
-">=" { return YY::Parser::token::GTE; }
+"==" { return YY::Parser::make_EQ(); }
+"!=" { return YY::Parser::make_NEQ(); }
+"<" { return YY::Parser::make_LT(); }
+">" { return YY::Parser::make_GT(); }
+"<=" { return YY::Parser::make_LTE(); }
+">=" { return YY::Parser::make_GTE(); }
 
-"+" { return YY::Parser::token::PLUS; }
-"-" { return YY::Parser::token::MINUS; }
-"*" { return YY::Parser::token::STAR; }
-"/" { return YY::Parser::token::SLASH; }
+"+" { return YY::Parser::make_PLUS(); }
+"-" { return YY::Parser::make_MINUS(); }
+"*" { return YY::Parser::make_STAR(); }
+"/" { return YY::Parser::make_SLASH(); }
 
-"(" { return YY::Parser::token::LPAREN; }
-")" { return YY::Parser::token::RPAREN; }
+"(" { return YY::Parser::make_LPAREN(); }
+")" { return YY::Parser::make_RPAREN(); }
 
-"?" { return YY::Parser::token::QUESTION_MARK; }
+"?" { return YY::Parser::make_QUESTION_MARK(); }
 
-[0-9]+ {
-  yylval->emplace<int>(std::atoi(yytext));
-  return YY::Parser::token::INT_TOKEN;
-}
+[0-9]+ { return YY::Parser::make_INT_TOKEN(std::atoi(yytext)); }
 
-[A-Za-z_][A-Za-z_0-9]* {
-  yylval->emplace<std::string>(yytext);
-  return YY::Parser::token::ID_TOKEN;
-}
+[A-Za-z_][A-Za-z_0-9]* { return YY::Parser::make_ID_TOKEN(yytext); }
 
 "//".* {
   /* Ignore oneline comments */
@@ -70,5 +64,5 @@
   /* Ignore whitespace */
 }
 
-.       { std::cerr << "Unexpected char: " << yytext << "\n"; }
+. { std::cerr << "Unexpected char: " << yytext << "\n"; }
 %%

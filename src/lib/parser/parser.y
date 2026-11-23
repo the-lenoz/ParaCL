@@ -6,6 +6,7 @@
 %define api.parser.class {Parser}
 %define api.namespace {YY}
 %define api.value.type variant
+%define api.token.constructor
 %define parse.error verbose
 
 %code requires {
@@ -19,9 +20,9 @@
 }
 
 %code {
-    #include "lexer.hpp"
-    int yylex(YY::Parser::semantic_type* yylval, YY::ParaLexer& lexer) {
-        return lexer.yylex(yylval);
+    #include "lexer.hpp" 
+     YY::Parser::symbol_type yylex(YY::ParaLexer& lexer) {
+        return lexer.next_token();
     }
 }
 
