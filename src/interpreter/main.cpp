@@ -2,7 +2,6 @@
 #include <utility>
 
 #include "AST.hpp"
-#include <iostream>
 
 import parser;
 import interpreter;
@@ -10,13 +9,16 @@ import exceptions;
 import dumper;
 
 int main() try {
-  std::unique_ptr<ASTNode> root;
+  YY::Driver drv{std::cin};
+
+  drv.Parse();
 
   std::ifstream test{"samples/test01.lang"};
   auto lexer = YY::ParaLexer(test, std::cout);
   YY::Parser parser(lexer, &root);
   parser.parse();
 
+  std::unique_ptr<ASTNode> root = drv.TakeAST();
 
   interpreter::InterpreterVisitor interpreter{};
 

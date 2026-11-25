@@ -10,6 +10,7 @@ namespace visitor {
 class Visitor {
  public:
   Visitor() = default;
+  ~Visitor() = default;
 
   virtual void VisitQuestionMarkNode(const QuestionMarkNode* node) = 0;
 

@@ -1,13 +1,19 @@
 %skeleton "lalr1.cc"
-%require "3.2"
+%require "3.6"
 %language "c++"
 %header
 %defines
+
 %define api.parser.class {Parser}
 %define api.namespace {YY}
-%define api.value.type variant
-%define parse.error verbose
 
+%define api.value.type variant
+%define api.token.constructor
+
+%define parse.error detailed
+
+%locations
+			
 %code requires {
     #include <memory>
     #include <iostream>
@@ -15,13 +21,15 @@
     #include "AST.hpp"
     namespace YY{
       class ParaLexer;
+      class Driver;
     } 
 }
 
 %code {
     #include "lexer.hpp"
-    int yylex(YY::Parser::semantic_type* yylval, YY::ParaLexer& lexer) {
-        return lexer.yylex(yylval);
+    #include "driver.hpp"
+     YY::Parser::symbol_type yylex(YY::Driver &drv) {
+       return drv.GetLex().next_token();
     }
 }
 
@@ -92,15 +100,13 @@
 %type <std::unique_ptr<IntNode>> number
 
 												
-%parse-param { YY::ParaLexer& lexer }
-%parse-param { std::unique_ptr<ASTNode>* root }
-%lex-param   { YY::ParaLexer& lexer }
-
+%param { YY::Driver &drv }
+			
 %%
 
 program:
   block {
-    *root = std::move($1);
+    drv.GiveAST(std::move($1));
   };
 
 block:
@@ -115,15 +121,20 @@ stmt:
   if { $$ = std::move($1); }
   | while { $$ = std::move($1); }
   | print { $$ = std::move($1); }
-  | assignment { $$ = std::move($1); };
+  | assignment { $$ = std::move($1); }
+  | error SEMICOLON { drv.RecoverError(YY::ParseErrorCode::BadStatement, @1,
+                                        "expected valid statement before ';'"); };
 
 if:
-  IF LPAREN expr RPAREN LBRACE block RBRACE {
-    $$ = std::make_unique<IfStmtNode>(std::move($3), std::move($6));
+  IF paren_expr LBRACE block RBRACE {
+    $$ = std::make_unique<IfStmtNode>(std::move($2), std::move($4));
+  }
+  | IF paren_expr LBRACE error RBRACE {
+    drv.RecoverError(YY::ParseErrorCode::BadBlock, @2, "expected valid block as 'if' body");
   };
 while:
-  WHILE LPAREN expr RPAREN LBRACE block RBRACE {
-    $$ = std::make_unique<WhileStmtNode>(std::move($3), std::move($6));
+  WHILE paren_expr LBRACE block RBRACE {
+    $$ = std::make_unique<WhileStmtNode>(std::move($2), std::move($4));
   };
 print:
   PRINT expr SEMICOLON {
@@ -220,6 +231,6 @@ number:
   };
 %%
 
-void YY::Parser::error(const std::string& msg) {
-    std::cerr << "Parser error: " << msg << std::endl;
+void YY::Parser::error(const location_type& loc, const std::string& msg) {
+    drv.OnSyntaxError(loc, msg);
 }
