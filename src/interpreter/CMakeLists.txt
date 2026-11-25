@@ -34,6 +34,11 @@ target_link_libraries(paracl
     file_management
     environment
     parser_lib
+    dumper
     CLI11::CLI11
     fmt::fmt
 )
+
+set_target_properties(paracl
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")

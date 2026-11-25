@@ -1,8 +1,6 @@
 #pragma once
 
-#include <istream>
-#include <ostream>
-
+#include "location.hh"
 #include "parser.tab.hh"
 #if !defined(yyFlexLexerOnce)
 #include <FlexLexer.h>
@@ -10,11 +8,11 @@
 namespace YY {
   
 class ParaLexer : public yyFlexLexer {
+  Driver &drv_;
  public:
+  location loc;
   using yyFlexLexer::yylex;
-  explicit ParaLexer(std::istream& in, std::ostream& out)
-      : yyFlexLexer(in, out) {}
+  explicit ParaLexer(Driver &drv);
 
-  int yylex(YY::Parser::semantic_type* yylval);
-};
-}  // namespace YY
+  Parser::symbol_type next_token();
+};}  // namespace YY

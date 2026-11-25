@@ -11,6 +11,7 @@ export module execute_file;
 import parser;
 import interpreter;
 import file_management;
+import dumper;
 
 namespace interpreter {
 
@@ -18,13 +19,24 @@ export void ExecuteFile(const std::string& input_path) {
 
   std::ifstream input_stream = file_manager::FileManager::OpenStream(input_path);
 
-  std::unique_ptr<ASTNode> root;
+  YY::Driver drv{input_stream};
 
-  auto lexer = YY::ParaLexer(input_stream, std::cout);
-  YY::Parser parser(lexer, &root);
-  parser.parse();
+  drv.Parse();
 
-  interpreter::InterpreterVisitor visitor{};
-  root->Accept(visitor);
+  if (drv.HasErrors()) {
+    for (auto& errcode : drv.GetErrorCodes())
+      for (auto& err : drv.GetErrorsByCode(errcode))
+        std::cerr << err.message << std::endl;
+    return -1;
+  }
+
+  std::unique_ptr<ASTNode> root = drv.TakeAST();
+
+  interpreter::InterpreterVisitor interpreter{};
+
+  root->Accept(interpreter);
+
+  dumper::GraphvizDump(std::cout, root.get());
+  return 0;
 }
 } // namespace interpreter

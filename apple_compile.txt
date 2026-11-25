@@ -1,0 +1,7 @@
+-DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++
+
+-DFLEX_INCLUDE_DIR=$(brew --prefix flex)/include
+
+-DFLEX_EXECUTABLE=$(brew --prefix flex)/bin/flex
+
+-DBISON_EXECUTABLE=$(brew --prefix bison)/bin/bison

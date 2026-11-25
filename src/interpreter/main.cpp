@@ -5,9 +5,9 @@
 #include <cstddef>
 #include <iostream>
 
-import interpreter;
-import execute_file;
+
 import exceptions;
+import execute_file;
 import repl;
 
 int main(int argc, char** argv) try {
@@ -25,16 +25,18 @@ int main(int argc, char** argv) try {
 
   size_t input_file_numbers = input_file_opt->count();
 
+  int error_code = 0;
   if (input_file_numbers > 1) {
     throw exception::ParaCLException{"You can choose only one input file!",
                                       exception::ErrorCode::kInputFlags};
   } else if (input_file_numbers == 1) {
-    interpreter::ExecuteFile(input_path);
+    error_code = interpreter::ExecuteFile(input_path);
   } else {
     interpreter::REPL(repl_flags);
   }
 
-} catch(const exception::ParaCLException& e) {
+  return error_code;
+} catch (const exception::ParaCLException& e) {
   std::cout << e.what() << '\n';
   e.Log();
   return static_cast<int>(e.GetErrorCode());
