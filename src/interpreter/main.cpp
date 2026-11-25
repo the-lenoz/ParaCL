@@ -1,5 +1,4 @@
-#include <fstream>
-#include <utility>
+#include <iostream>
 
 #include "AST.hpp"
 
@@ -12,11 +11,6 @@ int main() try {
   YY::Driver drv{std::cin};
 
   drv.Parse();
-
-  std::ifstream test{"samples/test01.lang"};
-  auto lexer = YY::ParaLexer(test, std::cout);
-  YY::Parser parser(lexer, &root);
-  parser.parse();
 
   std::unique_ptr<ASTNode> root = drv.TakeAST();
 

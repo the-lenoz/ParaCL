@@ -9,7 +9,7 @@ target_sources(dumper
       graphviz_dumper.cpp
 )
 
-# // TODO add cpm package boost
+# TODO add cpm package boost
 find_package(Boost REQUIRED COMPONENTS graph)
 
 target_link_libraries(dumper PUBLIC parser_lib Boost::graph)
