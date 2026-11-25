@@ -24,7 +24,9 @@ int main() try {
   interpreter::InterpreterVisitor interpreter{};
 
   root->Accept(interpreter);
+  
   dumper::GraphvizDump(std::cout, root.get());
+  return 0;
 } catch (const exception::ParaCLException& e) {
   std::cout << e.what() << '\n';
   e.Log();
