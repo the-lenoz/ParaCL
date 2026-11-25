@@ -1,4 +1,5 @@
-#include <fstream>
+#include <iostream>
+#include <memory>
 #include <utility>
 
 #include "AST.hpp"
@@ -6,25 +7,28 @@
 import parser;
 import interpreter;
 import exceptions;
-import dumper;
 
 int main() try {
   YY::Driver drv{std::cin};
 
   drv.Parse();
 
-  std::ifstream test{"samples/test01.lang"};
-  auto lexer = YY::ParaLexer(test, std::cout);
-  YY::Parser parser(lexer, &root);
-  parser.parse();
+  if (drv.HasErrors()) {
+    for (auto &errcode : drv.GetErrorCodes()) {
+      for (auto &err_info : drv.GetErrorsByCode(errcode)) {
+        std::cerr << err_info.message << std::endl;
+      }
+    }
+    return -1;
+  }
 
   std::unique_ptr<ASTNode> root = drv.TakeAST();
 
-  interpreter::InterpreterVisitor interpreter{};
+  interpreter::InterpreterVisitor visitor{};
 
-  root->Accept(interpreter);
-  dumper::GraphvizDump(std::cout, root.get());
-} catch(const exception::ParaCLException& e) {
+  interpreter::Execute(std::move(root), visitor);
+
+} catch (const exception::ParaCLException& e) {
   std::cout << e.what() << '\n';
   e.Log();
   return static_cast<int>(e.GetErrorCode());
