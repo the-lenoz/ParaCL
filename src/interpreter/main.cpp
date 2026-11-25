@@ -1,25 +1,34 @@
+#include <iostream>
+#include <memory>
 #include <utility>
 
 #include "AST.hpp"
-#include <iostream>
 
 import parser;
 import interpreter;
 import exceptions;
 
 int main() try {
-  std::unique_ptr<ASTNode> root;
+  YY::Driver drv{std::cin};
 
-  auto lexer = YY::ParaLexer(std::cin, std::cout);
-  YY::Parser parser(lexer, &root);
-  parser.parse();
+  drv.Parse();
 
+  if (drv.HasErrors()) {
+    for (auto &errcode : drv.GetErrorCodes()) {
+      for (auto &err_info : drv.GetErrorsByCode(errcode)) {
+        std::cerr << err_info.message << std::endl;
+      }
+    }
+    return -1;
+  }
+
+  std::unique_ptr<ASTNode> root = drv.TakeAST();
 
   interpreter::InterpreterVisitor visitor{};
 
   interpreter::Execute(std::move(root), visitor);
 
-} catch(const exception::ParaCLException& e) {
+} catch (const exception::ParaCLException& e) {
   std::cout << e.what() << '\n';
   e.Log();
   return static_cast<int>(e.GetErrorCode());
