@@ -232,5 +232,10 @@ number:
 %%
 
 void YY::Parser::error(const location_type& loc, const std::string& msg) {
-    drv.OnSyntaxError(loc, msg);
+  if (msg.find("unexpected end of file") != std::string::npos ||
+    msg.find("$end") != std::string::npos) {
+    drv.AddError(YY::ParseErrorCode::UnexpectedEOF, {loc, std::string(msg)});
+    return;
+  }
+  drv.OnSyntaxError(loc, msg);
 }
