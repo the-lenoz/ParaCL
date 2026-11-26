@@ -1,20 +1,18 @@
 add_executable(paracl main.cpp)
 
-include(FetchContent)
-
-FetchContent_Declare(
-  cli11
+CPMAddPackage(
+  NAME cli11
   URL https://github.com/CLIUtils/CLI11/archive/refs/tags/v2.7.2.zip
-  FIND_PACKAGE_ARGS NAMES CLI11 CONFIG
-)
-FetchContent_Declare(
-  fmt
-  URL https://github.com/fmtlib/fmt/releases/download/12.2.1/fmt-12.2.1.zip
-  FIND_PACKAGE_ARGS NAMES fmt CONFIG
+  URL_HASH SHA256=a3ae013321de0bb9195913044a0dcda76cae69bdf34f0cd947998343246498e9
 )
 
-set(FMT_MODULE OFF CACHE BOOL "" FORCE) # don't build fmt modules
-FetchContent_MakeAvailable(cli11 fmt)
+CPMAddPackage(
+  NAME fmt
+  URL https://github.com/fmtlib/fmt/releases/download/12.2.1/fmt-12.2.1.zip
+  URL_HASH SHA256=870a49acec5bcdab236aeea834ebd7f0b8548a7d8cea33c996b6873a37f2d50c
+  OPTIONS
+    "FMT_MODULE OFF"
+)
 
 target_sources(paracl
   PUBLIC
@@ -26,6 +24,7 @@ target_sources(paracl
 
   PRIVATE
     interpreter.cpp
+    repl.cpp
 )
 
 target_link_libraries(paracl
