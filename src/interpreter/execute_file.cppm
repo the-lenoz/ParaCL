@@ -15,7 +15,7 @@ import dumper;
 
 namespace interpreter {
 
-export void ExecuteFile(const std::string& input_path) {
+export int ExecuteFile(const std::string& input_path) {
 
   std::ifstream input_stream = file_manager::FileManager::OpenStream(input_path);
 

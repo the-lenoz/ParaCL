@@ -19,7 +19,7 @@ int main(int argc, char** argv) try {
   argv = app.ensure_utf8(argv);
   CLI::Option* input_file_opt = app.add_option("-f,--input_file,input_file", input_path,
                                                   "The input code file");
-  app.add_flag("-q,--quiet", repl_flags.quiet_repl, "Don't write a greeting in the repl");
+  app.add_flag("-q,--quiet", repl_flags.quiet_output, "Don't write a greeting in the repl");
   app.add_flag("-c,--no-colors", repl_flags.no_colors, "Don't use color output");
   CLI11_PARSE(app, argc, argv);
 
@@ -32,7 +32,7 @@ int main(int argc, char** argv) try {
   } else if (input_file_numbers == 1) {
     error_code = interpreter::ExecuteFile(input_path);
   } else {
-    interpreter::REPL(repl_flags);
+    error_code = interpreter::REPL(repl_flags);
   }
 
   return error_code;

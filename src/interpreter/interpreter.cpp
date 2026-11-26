@@ -23,19 +23,22 @@ IRV InterpreterVisitor::Eval(const ASTNode* node) {
 
 void InterpreterVisitor::VisitQuestionMarkNode(const QuestionMarkNode* node) {
   assert(node);
-  clearerr(stdin);
-  std::cin.exceptions(std::ios::failbit | std::ios::badbit);
+  std::cin.exceptions(std::ios::badbit);
 
   int val = 0;
 
   try {
     std::cin >> val;
+    int next_symbol = std::cin.get();    // clean stream (after std::cin, delete '\n')
+    if (next_symbol != EOF && next_symbol != '\n') {
+      throw exception::ParaCLException{"Incorrect input format!",
+                                     exception::ErrorCode::kInputData};
+    }
   } catch (const std::ios_base::failure& e) {
     std::println(std::cerr, "{}, code: {}",
                   e.what(), e.code().value());
     std::cin.clear();
   }
-
   val_ = val;
 }
 
@@ -107,7 +110,7 @@ void InterpreterVisitor::VisitDivNode(const DivNode* node) {
   int left_res = std::get<int>(Eval(left));
   int right_res = std::get<int>(Eval(right));
 
-  if (right == 0) {
+  if (right_res == 0) {
     throw exception::ParaCLException{"Division by zero!",
                                      exception::ErrorCode::kZeroDiv};
   }

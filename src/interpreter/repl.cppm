@@ -16,19 +16,31 @@ import exceptions;
 namespace interpreter {
 
 export struct ReplFlags {
-  bool quiet_repl = false;
+  bool quiet_output = false;
   bool no_colors = false;
 };
 
-enum class ReadStatus {
-  kEOF       = 0,
-  kEmptyLine = 1
+enum class MachineState {
+  kInit         = 0,
+  kIntermediate = 1,
+  kUnfinished   = 2,
+  kDead         = 3,
+  kFinal        = 4
 };
 
-using ReadResult = std::variant<std::istringstream, ReadStatus>;
+enum class PrioritySystem {
+  kHigher = 0,
+  kLower  = 1
+};
+
 } // namespace interpreter
 
 namespace {
+
+enum class InviteLineType {
+  kArrows,
+  kDots
+};
 
 void PrintGreeting(const interpreter::ReplFlags& repl_flags) {
 
@@ -52,71 +64,127 @@ void PrintGreeting(const interpreter::ReplFlags& repl_flags) {
              fmt::styled(" to quit.\n", greeting_style));
 }
 
-void PrintInvitation(const interpreter::ReplFlags& repl_flags) {
+void PrintInvitation(const interpreter::ReplFlags& repl_flags,
+                     InviteLineType invite_line_type) {
 
   auto invitation_style = (repl_flags.no_colors ?
                            fmt::text_style() :
                            fmt::fg(fmt::color::purple) | fmt::emphasis::bold);
 
-  fmt::print(invitation_style, "\n>>> ");
+  switch (invite_line_type) {
+    case InviteLineType::kArrows:
+      fmt::print(invitation_style, "\n>>> ");
+      break;
+    case InviteLineType::kDots:
+      fmt::print(invitation_style, "\n... ");
+      break;
+    default:
+      std::unreachable();
+  }
 }
 
-interpreter::ReadResult ReadLine(std::string& command, int& next_symbol) {
+std::istringstream CreateStream(std::string& command) {
 
-  if ((next_symbol = std::cin.peek()) == EOF) {
-    return interpreter::ReadStatus::kEOF;
-  } else if (next_symbol == '\n') {
-    std::cin.get();                        // clean stream (after std::cin)
-  }
+  std::string line;
 
-  std::getline(std::cin, command);
-  if (command.empty()) {
-    return interpreter::ReadStatus::kEmptyLine;
-  }
+  std::getline(std::cin, line);
 
-  std::istringstream in{command};
+  command += line;
+  command += '\n';
 
-  return in;
+  std::istringstream input{command};
+
+  return input;
+}
+
+void DumpError(const YY::Driver& drv, YY::ParseErrorCode errcode) {
+
+  for (auto& err : drv.GetErrorsByCode(errcode))
+    std::cerr << err.message << std::endl;
 }
 } // namespace
 
 namespace interpreter {
 
-export void REPL(const ReplFlags& repl_flags) {
+PrioritySystem ComparePriority(MachineState current, MachineState last) {
+  int compare_res = static_cast<int>(current) - static_cast<int>(last);
 
-  if (!repl_flags.quiet_repl) {
+  return (compare_res > 0 ? PrioritySystem::kHigher : PrioritySystem::kLower);
+}
+
+/**
+  Priority System:
+    1. MachineState::kDead
+    2. MachineState::kUnfinished
+    3. MachineState::kIntermediate
+  (the higher the enum class (MachineState) number, the higher the priority)
+
+  a state with a higher priority changes it
+*/
+interpreter::MachineState ParseCommand(YY::Driver& drv) {
+
+  MachineState machine_state = MachineState::kIntermediate;
+
+  drv.Parse();
+
+  if (drv.HasErrors()) {
+    for (auto& errcode : drv.GetErrorCodes()) {
+      if (errcode == YY::ParseErrorCode::UnexpectedEOF &&
+          ComparePriority(MachineState::kUnfinished, machine_state) == PrioritySystem::kHigher) {
+          machine_state = MachineState::kUnfinished;
+      } else {
+        DumpError(drv, errcode);
+        machine_state = MachineState::kDead;
+      }
+    }
+  }
+
+  return machine_state;
+}
+
+export int REPL(const ReplFlags& repl_flags) {
+
+  if (!repl_flags.quiet_output) {
     PrintGreeting(repl_flags);
   }
 
   interpreter::InterpreterVisitor visitor{};
   std::string command;
-  int next_symbol = 0;
-  ReadStatus* read_status;
+  InviteLineType invite_line_type = InviteLineType::kArrows;
 
-  [&] {
-    while (std::cin) {
-      PrintInvitation(repl_flags);
+  while (std::cin) {
+    PrintInvitation(repl_flags, invite_line_type);
 
-      ReadResult read_result = ReadLine(command, next_symbol);
-      if ((read_status = std::get_if<ReadStatus>(&read_result))) {
-        switch (*read_status) {
-          case ReadStatus::kEOF:       return ;
-          case ReadStatus::kEmptyLine: continue;
-          default:                     break;
-        }
-      }
-
-      std::istringstream& in = *(std::get_if<std::istringstream>(&read_result));
-      std::unique_ptr<ASTNode> root;
-      auto lexer = YY::ParaLexer(in, std::cout);
-      YY::Parser parser(lexer, &root);
-      parser.parse();
-
-      if (root) {
-        root->Accept(visitor);
-      }
+    if (std::cin.peek() == EOF) {
+      break;
     }
-  }();  // execute lambda in place
+
+    std::istringstream in = CreateStream(command);
+    YY::Driver drv{in};
+    MachineState machine_state = ParseCommand(drv);
+
+    switch (machine_state) {
+      case MachineState::kIntermediate:
+        command.clear();
+        invite_line_type = InviteLineType::kArrows;
+        break;
+      case MachineState::kUnfinished:
+        invite_line_type = InviteLineType::kDots;
+        continue;
+      case MachineState::kDead:
+        command.clear();
+        invite_line_type =InviteLineType::kArrows;
+        continue;
+      default:
+        break;
+    }
+
+    std::unique_ptr<ASTNode> root = drv.TakeAST();
+    if (root) {
+      root->Accept(visitor);
+    }
+  }
+  return 0;
 }
 } // interpreter
 

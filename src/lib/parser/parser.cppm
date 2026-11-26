@@ -9,4 +9,5 @@ export namespace YY {
 
 using YY::Driver;
 
+using YY::ParseErrorCode;
 }

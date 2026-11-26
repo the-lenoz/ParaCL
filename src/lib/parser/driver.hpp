@@ -92,7 +92,12 @@ class Driver {
 
   void FlushPendingErrors() {
     for (const auto& err : pending_errors_) {
-      AddError(ParseErrorCode::SyntaxError, {err.loc, err.message});
+      // TEMP FIX (will be reverted): classify EOF errors so REPL can continue
+      const auto code =
+          err.message.find("unexpected end of file") != std::string::npos
+              ? ParseErrorCode::UnexpectedEOF
+              : ParseErrorCode::SyntaxError;
+      AddError(code, {err.loc, err.message});
     }
     pending_errors_.clear();
   }
