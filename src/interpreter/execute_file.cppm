@@ -36,7 +36,6 @@ export int ExecuteFile(const std::string& input_path) {
 
   root->Accept(interpreter);
 
-  dumper::GraphvizDump(std::cout, root.get());
   return 0;
 }
 } // namespace interpreter
