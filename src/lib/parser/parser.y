@@ -110,7 +110,7 @@ program:
   };
 
 block:
-  /* empty */ { 
+  /* empty */ {
     $$ = nullptr;
   }
   | block stmt {
