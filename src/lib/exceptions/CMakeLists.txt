@@ -1,4 +1,4 @@
-add_library(exceptions STATIC)
+add_library(exceptions OBJECT)
 target_compile_options(exceptions PUBLIC -Wall -O2)
 target_sources(exceptions
   PUBLIC

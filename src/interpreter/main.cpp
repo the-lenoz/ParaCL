@@ -1,32 +1,41 @@
+#include <CLI/CLI.hpp>
+#include <utility>
+#include <fstream>
+#include <string>
+#include <cstddef>
 #include <iostream>
 
-#include "AST.hpp"
 
-import parser;
-import interpreter;
 import exceptions;
-import dumper;
+import execute_file;
+import repl;
 
-int main() try {
-  YY::Driver drv{std::cin};
+int main(int argc, char** argv) try {
 
-  drv.Parse();
+  std::string input_path;
+  interpreter::ReplFlags repl_flags{};
 
-  if (drv.HasErrors()) {
-    for (auto& errcode : drv.GetErrorCodes())
-      for (auto& err : drv.GetErrorsByCode(errcode))
-        std::cerr << err.message << std::endl;
-    return -1;
+  CLI::App app("Interpreter ParaCL");
+  argv = app.ensure_utf8(argv);
+  CLI::Option* input_file_opt = app.add_option("-f,--input_file,input_file", input_path,
+                                                  "The input code file");
+  app.add_flag("-q,--quiet", repl_flags.quiet_output, "Don't write a greeting in the repl");
+  app.add_flag("-c,--no-colors", repl_flags.no_colors, "Don't use color output");
+  CLI11_PARSE(app, argc, argv);
+
+  size_t input_file_numbers = input_file_opt->count();
+
+  int error_code = 0;
+  if (input_file_numbers > 1) {
+    throw exception::ParaCLException{"You can choose only one input file!",
+                                      exception::ErrorCode::kInputFlags};
+  } else if (input_file_numbers == 1) {
+    error_code = interpreter::ExecuteFile(input_path);
+  } else {
+    error_code = interpreter::REPL(repl_flags);
   }
-  
-  std::unique_ptr<ASTNode> root = drv.TakeAST();
 
-  interpreter::InterpreterVisitor interpreter{};
-
-  root->Accept(interpreter);
-  
-  dumper::GraphvizDump(std::cout, root.get());
-  return 0;
+  return error_code;
 } catch (const exception::ParaCLException& e) {
   std::cout << e.what() << '\n';
   e.Log();

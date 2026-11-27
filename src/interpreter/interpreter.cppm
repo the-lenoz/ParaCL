@@ -74,9 +74,4 @@ export class InterpreterVisitor : public visitor::Visitor {
 
   env::Environment environment;
 };
-
-export void Execute(std::unique_ptr<ASTNode> node, visitor::Visitor& visitor) {
-  node->Accept(visitor);
-}
-
 }  // namespace interpreter
